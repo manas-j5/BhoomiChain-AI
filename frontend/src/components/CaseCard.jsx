@@ -13,10 +13,10 @@ const CaseCard = ({ caseData }) => {
     <div
       id={`case-card-${id}`}
       className="card glass-hover cursor-pointer group animate-slide-up transition-all duration-300 hover:border-brand-500/30"
-      onClick={() => navigate(`/cases/${id}`)}
+      onClick={() => navigate(`/user/cases/${id}`)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && navigate(`/cases/${id}`)}
+      onKeyDown={(e) => e.key === 'Enter' && navigate(`/user/cases/${id}`)}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -31,7 +31,7 @@ const CaseCard = ({ caseData }) => {
 
       {/* Badges */}
       <div className="flex flex-wrap gap-1.5 mb-3">
-        <span className={getStatusClass(status)}>{status}</span>
+        <span className={getStatusClass(status)}>{status?.split(' — ')[0]}</span>
         <span className={getPriorityClass(priority)}>{priority}</span>
         <span className="badge bg-dark-800/80 text-dark-400 border border-dark-700/50">{category}</span>
       </div>

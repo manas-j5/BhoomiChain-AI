@@ -1,36 +1,41 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Bot, User, Sparkles, RefreshCw, Copy, Check } from 'lucide-react'
+import { Send, Bot, User, Sparkles, RefreshCw, Copy, Check, ExternalLink, Shield, AlertCircle } from 'lucide-react'
+import api from '../services/api'
 
 const SAMPLE_QUESTIONS = [
-  'Summarize the Ranchi encroachment case',
-  'What documents are required for a tribal land rights claim?',
-  'How long does a boundary dispute typically take in Jharkhand?',
-  'What is the Forest Rights Act 2006?',
+  'What is the status of the Sarafat Ali case?',
+  'Tell me about the Assam Arunachal border dispute',
+  'What land was involved in the Supreme Court case 8705?',
+  'What evidence exists for the Gyanvapi case?',
 ]
 
-// Simulated AI responses (connects to Python AI Engine later)
-const AI_RESPONSES = {
-  default: `I'm BhoomiChain AI, your land governance intelligence assistant. I can help you with:
-
-• **Case summaries** — AI-powered analysis of dispute evidence
-• **Legal context** — relevant laws, acts, and precedents
-• **Document analysis** — PDF extraction and citation
-• **GIS insights** — spatial analysis of land parcels
-
-*Note: Full AI capabilities will be available when the AI Engine (Python RAG pipeline on \`feature/ai\` branch) is connected.*`,
-  ranchi: `**Case: Agricultural Land Encroachment — Ranchi District (CASE-2024-001)**
-
-**Summary:** Plaintiff Ramesh Kumar Mahto claims ancestral ownership of 2.5 acres in Nagri village, Survey No. 45/A. Unauthorized construction by defendant Suresh Singh is alleged.
-
-**Key Evidence:**
-- Sale Deed (1952) — verified on blockchain ✓
-- Revenue record — verified ✓
-- Survey map — pending verification
-
-**Legal Basis:** Plaintiff has strong documentary evidence with verified historical records dating to 1952.
-
-**Status:** Active · Next hearing Aug 20, 2024 at Ranchi District Court.`,
-}
+const SourceBadge = ({ source }) => (
+  <div className="flex items-start gap-2 p-2.5 rounded-xl bg-dark-800/60 border border-white/5 text-xs">
+    <Shield size={11} className={`shrink-0 mt-0.5 ${
+      source.status === 'VERIFIED_PRIMARY' ? 'text-green-400' :
+      source.status === 'VERIFIED_GOVERNMENT' ? 'text-blue-400' :
+      source.status === 'SECONDARY_CROSS_CHECKED' ? 'text-yellow-400' :
+      'text-dark-500'
+    }`} />
+    <div className="flex-1 min-w-0">
+      <p className="text-dark-300 font-medium line-clamp-1">{source.name}</p>
+      <p className="text-dark-600 mt-0.5">{source.field}: <span className="text-dark-400">{source.value?.slice(0, 60)}{source.value?.length > 60 ? '…' : ''}</span></p>
+      <div className="flex items-center gap-2 mt-1">
+        <span className={`px-1.5 py-0.5 rounded text-[10px] ${
+          source.status === 'VERIFIED_PRIMARY' ? 'bg-green-900/30 text-green-400' :
+          source.status === 'VERIFIED_GOVERNMENT' ? 'bg-blue-900/30 text-blue-400' :
+          'bg-dark-700 text-dark-500'
+        }`}>{source.status?.replace(/_/g, ' ')}</span>
+        {source.url && (
+          <a href={source.url} target="_blank" rel="noopener noreferrer"
+            className="text-brand-400 hover:text-brand-300 flex items-center gap-0.5">
+            Source <ExternalLink size={9} />
+          </a>
+        )}
+      </div>
+    </div>
+  </div>
+)
 
 const MessageBubble = ({ msg }) => {
   const [copied, setCopied] = useState(false)
@@ -49,20 +54,16 @@ const MessageBubble = ({ msg }) => {
           ? 'bg-gradient-to-br from-brand-500 to-cyan-500'
           : 'bg-gradient-to-br from-violet-500 to-purple-700'
       }`}>
-        {msg.role === 'user'
-          ? <User size={14} className="text-white" />
-          : <Bot size={14} className="text-white" />
-        }
+        {msg.role === 'user' ? <User size={14} className="text-white" /> : <Bot size={14} className="text-white" />}
       </div>
 
       {/* Bubble */}
-      <div className={`max-w-[75%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+      <div className={`max-w-[78%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
         <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
           msg.role === 'user'
             ? 'bg-brand-600/30 border border-brand-500/30 text-white rounded-tr-sm'
             : 'glass border border-white/10 text-dark-200 rounded-tl-sm'
         }`}>
-          {/* Render markdown-like bold */}
           {msg.content.split('\n').map((line, i) => (
             <p key={i} className={line === '' ? 'h-2' : 'mb-0.5'}>
               {line.split(/(\*\*[^*]+\*\*)/).map((part, j) =>
@@ -73,6 +74,28 @@ const MessageBubble = ({ msg }) => {
             </p>
           ))}
         </div>
+
+        {/* Evidence sources */}
+        {msg.sources && msg.sources.length > 0 && (
+          <div className="w-full mt-1 space-y-1.5">
+            <p className="text-[10px] text-dark-600 flex items-center gap-1">
+              <Shield size={10} /> {msg.sources.length} evidence source{msg.sources.length > 1 ? 's' : ''} used
+            </p>
+            {msg.sources.slice(0, 3).map((s, i) => <SourceBadge key={i} source={s} />)}
+            {msg.sources.length > 3 && (
+              <p className="text-[10px] text-dark-600">+{msg.sources.length - 3} more sources</p>
+            )}
+          </div>
+        )}
+
+        {/* No evidence warning */}
+        {msg.role === 'assistant' && msg.evidenceCount === 0 && (
+          <div className="flex items-center gap-1.5 text-[10px] text-yellow-500/70 mt-1">
+            <AlertCircle size={10} />
+            <span>No evidence found in database for this query</span>
+          </div>
+        )}
+
         <div className="flex items-center gap-2">
           <span className="text-xs text-dark-600">{msg.time}</span>
           {msg.role === 'assistant' && (
@@ -86,14 +109,25 @@ const MessageBubble = ({ msg }) => {
   )
 }
 
+const INITIAL_MESSAGE = {
+  role: 'assistant',
+  content: `I'm BhoomiChain AI — an evidence-backed land governance intelligence assistant.
+
+I can answer questions about:
+
+• **Specific cases** — Sarafat Ali, Assam-Arunachal border dispute, Gyanvapi case
+• **Land records** — khata records, khasra numbers, ownership history
+• **Evidence** — court documents, land records, satellite data
+• **Land acquisition** — compensation, award details, parcel records
+
+Every answer I give is grounded in our verified evidence database with full source citations.`,
+  time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+  sources: [],
+  evidenceCount: 0,
+}
+
 const AIChat = () => {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: AI_RESPONSES.default,
-      time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-    },
-  ])
+  const [messages, setMessages] = useState([INITIAL_MESSAGE])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef(null)
@@ -104,33 +138,39 @@ const AIChat = () => {
 
   const sendMessage = async (text = input) => {
     if (!text.trim() || loading) return
-    const userMsg = {
-      role: 'user',
-      content: text,
-      time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-    }
-    setMessages(prev => [...prev, userMsg])
+    const time = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+    const userMsg = { role: 'user', content: text, time }
+    const updatedMessages = [...messages, userMsg]
+    setMessages(updatedMessages)
     setInput('')
     setLoading(true)
 
-    // Simulate AI delay (replace with real API call to AI Engine)
-    await new Promise(r => setTimeout(r, 1200))
-    const responseText = text.toLowerCase().includes('ranchi')
-      ? AI_RESPONSES.ranchi
-      : `I've received your query: **"${text}"**\n\nFull AI-powered responses will be available once the Python RAG pipeline (on the \`feature/ai\` branch) is deployed and connected. The pipeline processes:\n\n• PDF extraction → chunking → embeddings\n• ChromaDB vector search\n• LLM response with citations`
-    setMessages(prev => [...prev, {
-      role: 'assistant',
-      content: responseText,
-      time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-    }])
-    setLoading(false)
+    try {
+      // Build history (exclude initial welcome message)
+      const history = updatedMessages.slice(1).map(m => ({ role: m.role, content: m.content }))
+      const res = await api.post('/ai/chat', { message: text, history })
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: res.answer,
+        sources: res.sources || [],
+        evidenceCount: res.evidenceCount || 0,
+        time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+      }])
+    } catch (err) {
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Sorry, I encountered an error: ${err.message || 'Unknown error'}. Please check that the backend is running and GEMINI_API_KEY is set in .env`,
+        sources: [],
+        evidenceCount: 0,
+        time,
+      }])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
   }
 
   return (
@@ -142,15 +182,11 @@ const AIChat = () => {
             <Sparkles size={22} className="text-brand-400" />
             AI Legal Assistant
           </h1>
-          <p className="page-subtitle">Evidence-based land dispute analysis powered by RAG + LLM</p>
+          <p className="page-subtitle">Evidence-based land dispute analysis — powered by Gemini + RAG</p>
         </div>
         <button
           id="clear-chat-btn"
-          onClick={() => setMessages([{
-            role: 'assistant',
-            content: AI_RESPONSES.default,
-            time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-          }])}
+          onClick={() => setMessages([{ ...INITIAL_MESSAGE, time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) }])}
           className="btn-secondary flex items-center gap-2 text-sm"
         >
           <RefreshCw size={14} /> Clear Chat
@@ -200,7 +236,7 @@ const AIChat = () => {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about a case, legal provision, or land record…"
+            placeholder="Ask about a case, land record, or evidence…"
             className="w-full bg-transparent outline-none text-sm text-dark-200 placeholder-dark-500 resize-none"
             style={{ maxHeight: '100px', overflowY: 'auto' }}
           />

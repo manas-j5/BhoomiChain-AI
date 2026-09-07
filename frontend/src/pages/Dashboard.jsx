@@ -178,7 +178,7 @@ const Dashboard = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-white">Recent Cases</h2>
           <Link
-            to="/cases"
+            to="/user/cases"
             id="view-all-cases-link"
             className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors"
           >

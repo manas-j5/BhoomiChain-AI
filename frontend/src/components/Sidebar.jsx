@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   Search,
@@ -8,17 +8,26 @@ import {
   Shield,
   ChevronRight,
   Cpu,
+  BookOpen,
+  Library,
+  LogOut,
 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/cases', icon: Search, label: 'Case Search' },
-  { to: '/map', icon: Map, label: 'GIS Map' },
-  { to: '/ai-chat', icon: MessageSquareText, label: 'AI Assistant' },
-  { to: '/reports', icon: BarChart3, label: 'Reports' },
+  { to: '/user/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/user/cases', icon: Search, label: 'Case Search' },
+  { to: '/user/map', icon: Map, label: 'GIS Map' },
+  { to: '/user/ai-chat', icon: MessageSquareText, label: 'AI Assistant' },
+  { to: '/user/reports', icon: BarChart3, label: 'Reports' },
+  { to: '/user/workspace', icon: BookOpen, label: 'Research Workspace' },
+  { to: '/user/documents', icon: Library, label: 'Documents' },
 ]
 
 const Sidebar = ({ open }) => {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
   return (
     <aside
       className={`
@@ -29,7 +38,7 @@ const Sidebar = ({ open }) => {
       <div className="flex flex-col h-full p-4 min-w-[256px]">
         {/* Module label */}
         <div className="px-4 mb-2 mt-2">
-          <p className="text-xs font-semibold text-dark-600 uppercase tracking-widest">Navigation</p>
+          <p className="text-xs font-semibold text-dark-600 uppercase tracking-widest">User Portal</p>
         </div>
 
         {/* Nav links */}
@@ -72,10 +81,18 @@ const Sidebar = ({ open }) => {
         {/* SIH badge */}
         <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-xl bg-brand-600/10 border border-brand-500/20">
           <Shield size={14} className="text-brand-400 shrink-0" />
-          <div>
+          <div className="flex-1">
             <p className="text-xs font-bold text-brand-300">SIH 2026</p>
             <p className="text-xs text-dark-500">Team Project</p>
           </div>
+          <button
+            id="user-logout-btn"
+            onClick={() => { logout(); navigate('/') }}
+            title="Logout"
+            className="text-dark-600 hover:text-red-400 transition-colors"
+          >
+            <LogOut size={14} />
+          </button>
         </div>
       </div>
     </aside>

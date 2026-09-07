@@ -1,41 +1,54 @@
+import { TrendingUp, TrendingDown } from 'lucide-react'
+
+const colorMap = {
+  brand: { bg: 'bg-brand-600/10', border: 'border-brand-500/20', text: 'text-brand-400' },
+  blue:  { bg: 'bg-blue-600/10',  border: 'border-blue-500/20',  text: 'text-blue-400'  },
+  red:   { bg: 'bg-red-600/10',   border: 'border-red-500/20',   text: 'text-red-400'   },
+  green: { bg: 'bg-green-600/10', border: 'border-green-500/20', text: 'text-green-400' },
+  amber: { bg: 'bg-amber-600/10', border: 'border-amber-500/20', text: 'text-amber-400' },
+}
+
 const StatCard = ({ title, value, subtitle, icon: Icon, color = 'brand', trend }) => {
-  const colorMap = {
-    brand: 'from-brand-600/20 to-brand-900/10 border-brand-500/20 text-brand-400',
-    blue: 'from-blue-600/20 to-blue-900/10 border-blue-500/20 text-blue-400',
-    green: 'from-green-600/20 to-green-900/10 border-green-500/20 text-green-400',
-    yellow: 'from-yellow-600/20 to-yellow-900/10 border-yellow-500/20 text-yellow-400',
-    red: 'from-red-600/20 to-red-900/10 border-red-500/20 text-red-400',
-    cyan: 'from-cyan-600/20 to-cyan-900/10 border-cyan-500/20 text-cyan-400',
+  const c = colorMap[color] || colorMap.brand
+
+  // Loading skeleton
+  if (value === undefined || value === null) {
+    return (
+      <div className="stat-card animate-pulse">
+        <div className="flex justify-between items-start mb-4">
+          <div className="w-10 h-10 bg-dark-800 rounded-xl" />
+          <div className="w-12 h-4 bg-dark-800 rounded" />
+        </div>
+        <div className="h-8 bg-dark-800 rounded w-1/3 mb-2" />
+        <div className="h-3 bg-dark-800 rounded w-2/3 mb-1" />
+        <div className="h-3 bg-dark-800 rounded w-1/2" />
+      </div>
+    )
   }
-  const classes = colorMap[color] || colorMap.brand
 
   return (
-    <div className={`stat-card bg-gradient-to-br ${classes} border animate-slide-up`}>
-      {/* Background glow */}
-      <div className={`absolute inset-0 rounded-xl opacity-10 bg-gradient-to-br ${classes}`} />
-
-      <div className="relative flex items-start justify-between">
-        <div>
-          <p className="text-dark-400 text-sm font-medium mb-2">{title}</p>
-          <p className="text-3xl font-bold text-white mb-1">
-            {value ?? <span className="animate-pulse text-dark-600">—</span>}
-          </p>
-          {subtitle && <p className="text-dark-500 text-xs">{subtitle}</p>}
-          {trend && (
-            <div className="mt-2 flex items-center gap-1">
-              <span className={`text-xs font-semibold ${trend > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
-              </span>
-              <span className="text-dark-600 text-xs">vs last month</span>
-            </div>
-          )}
+    <div className={`stat-card border ${c.border} group hover:border-opacity-80 transition-all duration-300`}>
+      {/* Header row */}
+      <div className="flex items-start justify-between mb-4">
+        <div className={`w-10 h-10 rounded-xl ${c.bg} border ${c.border} flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
+          <Icon size={18} className={c.text} />
         </div>
-        {Icon && (
-          <div className={`p-3 rounded-xl bg-current/10 ${colorMap[color]?.split(' ')[3] || 'text-brand-400'}`}>
-            <Icon size={22} />
-          </div>
+        {trend !== undefined && (
+          <span className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${
+            trend >= 0 ? 'text-green-400 bg-green-500/10 border border-green-500/20' : 'text-red-400 bg-red-500/10 border border-red-500/20'
+          }`}>
+            {trend >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+            {Math.abs(trend)}%
+          </span>
         )}
       </div>
+
+      {/* Value */}
+      <p className={`text-3xl font-extrabold ${c.text} mb-1 tabular-nums`}>
+        {typeof value === 'number' ? value.toLocaleString() : value}
+      </p>
+      <p className="text-white font-semibold text-sm mb-0.5">{title}</p>
+      {subtitle && <p className="text-dark-500 text-xs">{subtitle}</p>}
     </div>
   )
 }

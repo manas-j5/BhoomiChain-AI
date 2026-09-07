@@ -79,7 +79,7 @@ const CaseDetails = () => {
         <XCircle size={48} className="text-red-500 mb-4" />
         <p className="text-white font-semibold text-lg">Case Not Found</p>
         <p className="text-dark-400 text-sm mt-1">{error}</p>
-        <button onClick={() => navigate('/cases')} className="btn-primary mt-6">Back to Cases</button>
+        <button onClick={() => navigate('/user/cases')} className="btn-primary mt-6">Back to Cases</button>
       </div>
     )
   }
@@ -89,7 +89,7 @@ const CaseDetails = () => {
       {/* Back + header */}
       <button
         id="back-to-cases-btn"
-        onClick={() => navigate('/cases')}
+        onClick={() => navigate('/user/cases')}
         className="flex items-center gap-2 text-dark-400 hover:text-white transition-colors mb-6 text-sm"
       >
         <ArrowLeft size={16} /> Back to Cases
