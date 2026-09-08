@@ -1,28 +1,43 @@
-const express = require('express');
-const cors = require('cors');
-const { requestLogger, errorHandler, notFound } = require('./middleware/errorHandler');
+const express = require('express')
+const cors = require('cors')
+const morgan = require('morgan')
+const helmet = require('helmet')
+const router = require('./routes')
+const errorHandler = require('./middleware/errorHandler')
+const notFound = require('./middleware/notFound')
 
-// Route imports
-const healthRoutes = require('./routes/health');
-const caseRoutes = require('./routes/cases');
+const app = express()
 
-const app = express();
+// ── Security ──────────────────────────────────────────────────────────────────
+app.use(helmet())
 
-// ── Middleware ─────────────────────────────────────────────────────────────
+// ── CORS ──────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:3000')
+  .split(',')
+  .map(o => o.trim())
+
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: (origin, cb) => {
+    // Allow requests with no origin (mobile, curl) or whitelisted origins
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes('*')) {
+      cb(null, true)
+    } else {
+      cb(new Error(`CORS: ${origin} not allowed`))
+    }
+  },
   credentials: true,
-}));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-app.use(requestLogger);
+}))
 
-// ── Routes ─────────────────────────────────────────────────────────────────
-app.use('/api/health', healthRoutes);
-app.use('/api/cases', caseRoutes);
+// ── Body parsing ──────────────────────────────────────────────────────────────
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true }))
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'))
 
-// ── Error Handling ──────────────────────────────────────────────────────────
-app.use(notFound);
-app.use(errorHandler);
+// ── Routes ────────────────────────────────────────────────────────────────────
+app.use('/api', router)
 
-module.exports = app;
+// ── Error handling ────────────────────────────────────────────────────────────
+app.use(notFound)
+app.use(errorHandler)
+
+module.exports = app
