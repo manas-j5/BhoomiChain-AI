@@ -1,19 +1,19 @@
-/**
- * Database configuration placeholder.
- * Wire PostgreSQL/Prisma here when the database is ready.
- *
- * Example (Prisma):
- *   const { PrismaClient } = require('@prisma/client');
- *   const prisma = new PrismaClient();
- *   module.exports = prisma;
- */
+const { Pool } = require('pg');
+const config = require('./index');
 
-const config = {
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'bhoomichain',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '',
+const pool = new Pool(
+  process.env.DATABASE_URL
+    ? { connectionString: process.env.DATABASE_URL }
+    : {
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 5432,
+        database: process.env.DB_NAME || 'bhoomichain',
+        user: process.env.DB_USER || 'postgres',
+        password: process.env.DB_PASSWORD || 'postgres',
+      }
+);
+
+module.exports = {
+  query: (text, params) => pool.query(text, params),
+  pool,
 };
-
-module.exports = config;

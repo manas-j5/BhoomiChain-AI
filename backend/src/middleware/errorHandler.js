@@ -1,43 +1,25 @@
 /**
- * requestLogger — logs method, URL, status and response time
+ * Centralized error handling middleware.
+ * All errors thrown with next(err) land here.
  */
-const requestLogger = (req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    const color =
-      res.statusCode >= 500 ? '\x1b[31m' : // red
-      res.statusCode >= 400 ? '\x1b[33m' : // yellow
-      res.statusCode >= 300 ? '\x1b[36m' : // cyan
-      '\x1b[32m';                           // green
-    console.log(
-      `${color}[${new Date().toISOString()}] ${req.method} ${req.url} ${res.statusCode} — ${duration}ms\x1b[0m`
-    );
-  });
-  next();
-};
-
-/**
- * notFound — 404 handler for unknown routes
- */
-const notFound = (req, res, next) => {
-  const error = new Error(`Route not found: ${req.method} ${req.originalUrl}`);
-  error.statusCode = 404;
-  next(error);
-};
-
-/**
- * errorHandler — global error middleware
- */
+// eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  res.status(statusCode).json({
+  const status = err.status || err.statusCode || 500
+  const message = err.message || 'Internal Server Error'
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(`[ERROR] ${req.method} ${req.url} → ${status}: ${message}`)
+    if (err.stack) console.error(err.stack)
+  }
+
+  res.status(status).json({
     success: false,
     error: {
-      message: err.message || 'Internal Server Error',
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+      message,
+      status,
+      ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
     },
-  });
-};
+  })
+}
 
-module.exports = { requestLogger, notFound, errorHandler };
+module.exports = errorHandler

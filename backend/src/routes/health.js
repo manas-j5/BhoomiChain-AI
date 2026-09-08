@@ -1,27 +1,25 @@
-const express = require('express');
-const router = express.Router();
+const { Router } = require('express')
+const config = require('../config')
 
-/**
- * GET /api/health
- * Health check endpoint — used by Docker, CI/CD and monitoring tools.
- */
+const router = Router()
+
+// GET /api/health
 router.get('/', (req, res) => {
-  res.status(200).json({
+  res.json({
     success: true,
-    status: 'OK',
-    message: 'BhoomiChain AI Backend Running',
-    version: '1.0.0',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    uptime: `${Math.floor(process.uptime())}s`,
-    services: {
-      api: 'UP',
-      database: 'NOT_CONNECTED (mock data active)',
-      ai_engine: 'PENDING',
-      gis_engine: 'PENDING',
-      blockchain: 'PENDING',
+    data: {
+      status: 'OK',
+      environment: config.NODE_ENV,
+      timestamp: new Date().toISOString(),
+      services: {
+        api: true,
+        database: false,        // Phase 2: PostgreSQL + PostGIS
+        aiEngine: false,        // Phase 2: Python RAG pipeline
+        gisEngine: false,       // Phase 2: PostGIS GIS service
+        blockchain: false,      // Phase 4: Provenance layer
+      },
     },
-  });
-});
+  })
+})
 
-module.exports = router;
+module.exports = router
