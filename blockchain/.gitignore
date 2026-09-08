@@ -1,0 +1,15 @@
+node_modules/
+
+.env
+
+artifacts/
+
+cache/
+
+coverage/
+
+typechain/
+
+.env.local
+
+*.log
