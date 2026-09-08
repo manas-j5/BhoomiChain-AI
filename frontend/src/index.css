@@ -12,7 +12,7 @@
   }
 
   body {
-    @apply bg-dark-950 text-dark-100 font-sans antialiased;
+    @apply bg-dark-50 text-dark-900 dark:bg-dark-950 dark:text-dark-100 font-sans antialiased;
     min-height: 100vh;
   }
 
@@ -22,25 +22,25 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-dark-900;
+    @apply bg-dark-100 dark:bg-dark-900;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-dark-600 rounded-full;
+    @apply bg-dark-300 dark:bg-dark-600 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-dark-500;
+    @apply bg-dark-400 dark:bg-dark-500;
   }
 }
 
 @layer components {
   .glass {
-    @apply bg-white/5 backdrop-blur-md border border-white/10;
+    @apply bg-white/80 dark:bg-white/5 backdrop-blur-md border border-dark-200 dark:border-white/10 shadow-sm dark:shadow-none;
   }
 
   .glass-hover {
-    @apply hover:bg-white/10 transition-all duration-300;
+    @apply hover:bg-white dark:hover:bg-white/10 transition-all duration-300;
   }
 
   .card {
@@ -52,11 +52,11 @@
   }
 
   .btn-secondary {
-    @apply glass glass-hover text-dark-100 font-medium px-4 py-2 rounded-lg transition-all duration-200 active:scale-95;
+    @apply glass glass-hover text-dark-700 dark:text-dark-100 font-medium px-4 py-2 rounded-lg transition-all duration-200 active:scale-95;
   }
 
   .input-field {
-    @apply glass rounded-lg px-4 py-2.5 text-dark-100 placeholder-dark-500 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 w-full transition-all duration-200;
+    @apply bg-white dark:bg-white/5 border border-dark-200 dark:border-white/10 shadow-sm dark:shadow-none rounded-lg px-4 py-2.5 text-dark-900 dark:text-dark-100 placeholder-dark-400 dark:placeholder-dark-500 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 w-full transition-all duration-200;
   }
 
   .badge {
@@ -64,43 +64,43 @@
   }
 
   .badge-active {
-    @apply badge bg-blue-500/20 text-blue-400 border border-blue-500/30;
+    @apply badge bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-300 dark:border-blue-500/30;
   }
 
   .badge-pending {
-    @apply badge bg-yellow-500/20 text-yellow-400 border border-yellow-500/30;
+    @apply badge bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-500/30;
   }
 
   .badge-resolved {
-    @apply badge bg-green-500/20 text-green-400 border border-green-500/30;
+    @apply badge bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-500/30;
   }
 
   .badge-dismissed {
-    @apply badge bg-dark-600/50 text-dark-400 border border-dark-600/50;
+    @apply badge bg-dark-100 dark:bg-dark-600/50 text-dark-600 dark:text-dark-400 border border-dark-300 dark:border-dark-600/50;
   }
 
   .badge-critical {
-    @apply badge bg-red-500/20 text-red-400 border border-red-500/30;
+    @apply badge bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-500/30;
   }
 
   .badge-high {
-    @apply badge bg-orange-500/20 text-orange-400 border border-orange-500/30;
+    @apply badge bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-300 dark:border-orange-500/30;
   }
 
   .badge-medium {
-    @apply badge bg-yellow-500/20 text-yellow-400 border border-yellow-500/30;
+    @apply badge bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border border-yellow-300 dark:border-yellow-500/30;
   }
 
   .badge-low {
-    @apply badge bg-green-500/20 text-green-400 border border-green-500/30;
+    @apply badge bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-500/30;
   }
 
   .sidebar-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-dark-400 hover:text-white hover:bg-white/10 transition-all duration-200 font-medium text-sm;
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-dark-600 dark:text-dark-400 hover:text-dark-900 dark:hover:text-white hover:bg-dark-100 dark:hover:bg-white/10 transition-all duration-200 font-medium text-sm;
   }
 
   .sidebar-link-active {
-    @apply sidebar-link text-white bg-brand-600/20 border border-brand-500/30 text-brand-300;
+    @apply sidebar-link text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-600/20 border border-brand-200 dark:border-brand-500/30;
   }
 
   .stat-card {
@@ -108,11 +108,11 @@
   }
 
   .page-title {
-    @apply text-2xl font-bold text-white mb-1;
+    @apply text-2xl font-bold text-dark-900 dark:text-white mb-1;
   }
 
   .page-subtitle {
-    @apply text-dark-400 text-sm mb-6;
+    @apply text-dark-600 dark:text-dark-400 text-sm mb-6;
   }
 }
 

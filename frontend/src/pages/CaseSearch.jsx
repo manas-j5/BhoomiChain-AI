@@ -92,7 +92,7 @@ const CaseSearch = () => {
             <label className="block text-xs text-dark-400 mb-1.5 font-medium">Status</label>
             <select
               id="filter-status"
-              className="input-field bg-dark-900 text-sm"
+              className="input-field bg-transparent text-sm"
               value={filters.status}
               onChange={(e) => handleFilterChange('status', e.target.value)}
             >
@@ -103,7 +103,7 @@ const CaseSearch = () => {
             <label className="block text-xs text-dark-400 mb-1.5 font-medium">Priority</label>
             <select
               id="filter-priority"
-              className="input-field bg-dark-900 text-sm"
+              className="input-field bg-transparent text-sm"
               value={filters.priority}
               onChange={(e) => handleFilterChange('priority', e.target.value)}
             >
@@ -114,7 +114,7 @@ const CaseSearch = () => {
             <label className="block text-xs text-dark-400 mb-1.5 font-medium">District</label>
             <select
               id="filter-district"
-              className="input-field bg-dark-900 text-sm"
+              className="input-field bg-transparent text-sm"
               value={filters.district}
               onChange={(e) => handleFilterChange('district', e.target.value)}
             >
@@ -137,9 +137,9 @@ const CaseSearch = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="card animate-pulse">
-              <div className="h-4 bg-dark-800 rounded w-3/4 mb-3" />
-              <div className="h-3 bg-dark-800 rounded w-full mb-2" />
-              <div className="h-3 bg-dark-800 rounded w-2/3" />
+              <div className="h-4 bg-dark-200 dark:bg-dark-800 rounded w-3/4 mb-3" />
+              <div className="h-3 bg-dark-200 dark:bg-dark-800 rounded w-full mb-2" />
+              <div className="h-3 bg-dark-200 dark:bg-dark-800 rounded w-2/3" />
             </div>
           ))}
         </div>

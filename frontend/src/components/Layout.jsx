@@ -7,7 +7,7 @@ const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-dark-950">
+    <div className="flex h-screen overflow-hidden bg-dark-50 dark:bg-dark-950 transition-colors duration-300">
       {/* Sidebar */}
       <Sidebar open={sidebarOpen} />
 

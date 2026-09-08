@@ -59,25 +59,29 @@ const MessageBubble = ({ msg }) => {
       <div className={`max-w-[75%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
         <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
           msg.role === 'user'
-            ? 'bg-brand-600/30 border border-brand-500/30 text-white rounded-tr-sm'
-            : 'glass border border-white/10 text-dark-200 rounded-tl-sm'
+            ? 'bg-brand-600/90 dark:bg-brand-600/30 border border-brand-500/30 text-white rounded-tr-sm shadow-sm'
+            : 'glass border border-dark-200 dark:border-white/10 text-dark-800 dark:text-dark-200 rounded-tl-sm'
         }`}>
-          {/* Render markdown-like bold */}
-          {msg.content.split('\n').map((line, i) => (
-            <p key={i} className={line === '' ? 'h-2' : 'mb-0.5'}>
-              {line.split(/(\*\*[^*]+\*\*)/).map((part, j) =>
-                part.startsWith('**') && part.endsWith('**')
-                  ? <strong key={j} className="text-white font-semibold">{part.slice(2, -2)}</strong>
-                  : part
-              )}
-            </p>
-          ))}
+          {/* Render markdown-like bold and lists */}
+          {msg.content.split('\n').map((line, i) => {
+            const isBullet = line.trim().startsWith('•') || line.trim().startsWith('-');
+            const formattedLine = line.split(/(\*\*[^*]+\*\*)/).map((part, j) =>
+              part.startsWith('**') && part.endsWith('**')
+                ? <strong key={j} className="font-bold text-dark-900 dark:text-white">{part.slice(2, -2)}</strong>
+                : part
+            );
+            return (
+              <p key={i} className={`${line === '' ? 'h-2' : 'mb-1'} ${isBullet ? 'pl-4 relative before:content-["•"] before:absolute before:left-0 before:text-brand-500' : ''}`}>
+                {isBullet ? formattedLine.map((el, i) => (typeof el === 'string' ? el.replace(/^[\s•-]+/, '') : el)) : formattedLine}
+              </p>
+            );
+          })}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-dark-600">{msg.time}</span>
+          <span className="text-xs text-dark-500 dark:text-dark-600">{msg.time}</span>
           {msg.role === 'assistant' && (
-            <button onClick={copyText} className="text-dark-600 hover:text-dark-300 transition-colors">
-              {copied ? <Check size={11} className="text-green-400" /> : <Copy size={11} />}
+            <button onClick={copyText} className="text-dark-400 hover:text-dark-700 dark:text-dark-600 dark:hover:text-dark-300 transition-colors">
+              {copied ? <Check size={11} className="text-green-500 dark:text-green-400" /> : <Copy size={11} />}
             </button>
           )}
         </div>
@@ -164,7 +168,7 @@ const AIChat = () => {
             key={q}
             id={`sample-q-${q.slice(0, 20).replace(/\s+/g, '-').toLowerCase()}`}
             onClick={() => sendMessage(q)}
-            className="text-xs glass glass-hover px-3 py-1.5 rounded-full text-dark-300 hover:text-white transition-colors"
+            className="text-xs glass glass-hover px-3 py-1.5 rounded-full text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-white transition-colors"
           >
             {q}
           </button>
@@ -179,10 +183,10 @@ const AIChat = () => {
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shrink-0 mt-1">
               <Bot size={14} className="text-white" />
             </div>
-            <div className="glass px-4 py-3 rounded-2xl rounded-tl-sm">
+            <div className="glass border-dark-200 dark:border-white/10 px-4 py-3 rounded-2xl rounded-tl-sm">
               <div className="flex gap-1.5 items-center h-5">
                 {[0, 150, 300].map(d => (
-                  <div key={d} className="w-2 h-2 rounded-full bg-dark-500 animate-bounce" style={{ animationDelay: `${d}ms` }} />
+                  <div key={d} className="w-2 h-2 rounded-full bg-dark-300 dark:bg-dark-500 animate-bounce" style={{ animationDelay: `${d}ms` }} />
                 ))}
               </div>
             </div>
@@ -201,7 +205,7 @@ const AIChat = () => {
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask about a case, legal provision, or land record…"
-            className="w-full bg-transparent outline-none text-sm text-dark-200 placeholder-dark-500 resize-none"
+            className="w-full bg-transparent outline-none text-sm text-dark-900 dark:text-dark-200 placeholder-dark-400 dark:placeholder-dark-500 resize-none"
             style={{ maxHeight: '100px', overflowY: 'auto' }}
           />
         </div>
