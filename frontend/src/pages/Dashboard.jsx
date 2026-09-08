@@ -25,8 +25,8 @@ const COLORS = ['#4c6ef5', '#f59f00', '#40c057', '#e03131', '#228be6', '#fd7e14'
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="glass rounded-xl px-4 py-3 text-xs border border-white/10">
-      <p className="text-dark-300 font-semibold mb-1">{label}</p>
+    <div className="bg-white dark:bg-dark-900 shadow-lg rounded-xl px-4 py-3 text-xs border border-dark-200 dark:border-white/10 max-w-xs">
+      <p className="text-dark-900 dark:text-dark-300 font-semibold mb-1 truncate">{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color }}>{p.name}: <strong>{p.value}</strong></p>
       ))}
@@ -96,7 +96,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Monthly trend */}
         <div className="card lg:col-span-2">
-          <h2 className="text-sm font-semibold text-white mb-4">Cases Filed vs Resolved (Monthly)</h2>
+          <h2 className="text-sm font-semibold text-dark-900 dark:text-white mb-4">Cases Filed vs Resolved (Monthly)</h2>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={monthlyData}>
               <defs>
@@ -109,9 +109,9 @@ const Dashboard = () => {
                   <stop offset="95%" stopColor="#40c057" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="month" tick={{ fill: '#868e96', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#868e96', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-dark-200 dark:text-white/5" />
+              <XAxis dataKey="month" tick={{ fill: 'currentColor', fontSize: 11 }} className="text-dark-500 dark:text-dark-400" axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: 'currentColor', fontSize: 11 }} className="text-dark-500 dark:text-dark-400" axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ fontSize: '11px', color: '#868e96' }} />
               <Area type="monotone" dataKey="filed" name="Filed" stroke="#4c6ef5" fill="url(#gradFiled)" strokeWidth={2} />
@@ -122,17 +122,19 @@ const Dashboard = () => {
 
         {/* Category breakdown */}
         <div className="card">
-          <h2 className="text-sm font-semibold text-white mb-4">Cases by Category</h2>
+          <h2 className="text-sm font-semibold text-dark-900 dark:text-white mb-4">Cases by Category</h2>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
                 data={categoryData}
                 cx="50%"
                 cy="50%"
-                innerRadius={55}
-                outerRadius={80}
-                paddingAngle={3}
+                innerRadius={65}
+                outerRadius={85}
+                paddingAngle={4}
+                cornerRadius={4}
                 dataKey="value"
+                stroke="none"
               >
                 {categoryData.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -146,9 +148,9 @@ const Dashboard = () => {
               <div key={item.name} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                  <span className="text-dark-400">{item.name}</span>
+                  <span className="text-dark-700 dark:text-dark-400">{item.name}</span>
                 </div>
-                <span className="text-white font-semibold">{item.value}</span>
+                <span className="text-dark-900 dark:text-white font-semibold">{item.value}</span>
               </div>
             ))}
           </div>
@@ -157,16 +159,38 @@ const Dashboard = () => {
 
       {/* District bar chart */}
       <div className="card mb-8">
-        <h2 className="text-sm font-semibold text-white mb-4">Cases by District</h2>
-        <ResponsiveContainer width="100%" height={160}>
-          <BarChart data={districtData} barSize={28}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="name" tick={{ fill: '#868e96', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: '#868e96', fontSize: 11 }} axisLine={false} tickLine={false} />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="value" name="Cases" radius={[4, 4, 0, 0]}>
+        <h2 className="text-sm font-semibold text-dark-900 dark:text-white mb-6">Cases by District</h2>
+        <ResponsiveContainer width="100%" height={320}>
+          <BarChart data={districtData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+            <defs>
               {districtData.map((_, index) => (
-                <Cell key={`bar-${index}`} fill={COLORS[index % COLORS.length]} />
+                <linearGradient key={`grad-${index}`} id={`colorUv${index}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={COLORS[index % COLORS.length]} stopOpacity={1} />
+                  <stop offset="100%" stopColor={COLORS[index % COLORS.length]} stopOpacity={0.1} />
+                </linearGradient>
+              ))}
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-dark-200 dark:text-white/5" vertical={false} />
+            <XAxis
+              dataKey="name"
+              tick={{ fill: 'currentColor', fontSize: 11, fontWeight: 500 }}
+              className="text-dark-600 dark:text-dark-400"
+              axisLine={false}
+              tickLine={false}
+              tickMargin={12}
+              tickFormatter={(val) => val.length > 15 ? val.slice(0, 15) + '...' : val}
+            />
+            <YAxis 
+              tick={{ fill: 'currentColor', fontSize: 11, fontWeight: 500 }} 
+              className="text-dark-600 dark:text-dark-400" 
+              axisLine={false} 
+              tickLine={false} 
+              tickMargin={12}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'currentColor', opacity: 0.05 }} className="text-dark-500 dark:text-white" />
+            <Bar dataKey="value" name="Cases" radius={[6, 6, 0, 0]} maxBarSize={50} animationDuration={1500}>
+              {districtData.map((_, index) => (
+                <Cell key={`bar-${index}`} fill={`url(#colorUv${index})`} />
               ))}
             </Bar>
           </BarChart>
@@ -176,7 +200,7 @@ const Dashboard = () => {
       {/* Recent cases */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-white">Recent Cases</h2>
+          <h2 className="text-sm font-semibold text-dark-900 dark:text-white">Recent Cases</h2>
           <Link
             to="/cases"
             id="view-all-cases-link"
@@ -189,9 +213,9 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2, 3].map(i => (
               <div key={i} className="card animate-pulse">
-                <div className="h-4 bg-dark-800 rounded w-3/4 mb-3" />
-                <div className="h-3 bg-dark-800 rounded w-1/2 mb-4" />
-                <div className="h-20 bg-dark-800 rounded" />
+                <div className="h-4 bg-dark-200 dark:bg-dark-800 rounded w-3/4 mb-3" />
+                <div className="h-3 bg-dark-200 dark:bg-dark-800 rounded w-1/2 mb-4" />
+                <div className="h-20 bg-dark-200 dark:bg-dark-800 rounded" />
               </div>
             ))}
           </div>

@@ -16,11 +16,11 @@ const StatCard = ({ title, value, subtitle, icon: Icon, color = 'brand', trend }
 
       <div className="relative flex items-start justify-between">
         <div>
-          <p className="text-dark-400 text-sm font-medium mb-2">{title}</p>
-          <p className="text-3xl font-bold text-white mb-1">
-            {value ?? <span className="animate-pulse text-dark-600">—</span>}
+          <p className="text-dark-700 dark:text-dark-400 text-sm font-medium mb-2">{title}</p>
+          <p className="text-3xl font-bold text-dark-900 dark:text-white mb-1">
+            {value ?? <span className="animate-pulse text-dark-400 dark:text-dark-600">—</span>}
           </p>
-          {subtitle && <p className="text-dark-500 text-xs">{subtitle}</p>}
+          {subtitle && <p className="text-dark-600 dark:text-dark-500 text-xs">{subtitle}</p>}
           {trend && (
             <div className="mt-2 flex items-center gap-1">
               <span className={`text-xs font-semibold ${trend > 0 ? 'text-green-400' : 'text-red-400'}`}>
