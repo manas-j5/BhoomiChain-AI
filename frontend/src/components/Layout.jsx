@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
+import { ToastContainer } from './Toast'
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -20,6 +21,9 @@ const Layout = () => {
           </div>
         </main>
       </div>
+
+      {/* Global toast notifications */}
+      <ToastContainer />
     </div>
   )
 }
