@@ -20,8 +20,42 @@ const INITIAL_MESSAGE = `I'm BhoomiChain AI, your land governance intelligence a
 
 How can I help you today?`
 
-const MessageBubble = ({ msg }) => {
+const MessageBubble = ({ msg, onTyping }) => {
   const [copied, setCopied] = useState(false)
+  const [displayedText, setDisplayedText] = useState(msg.isNew ? '' : msg.content)
+
+  useEffect(() => {
+    if (!msg.isNew) {
+      setDisplayedText(msg.content)
+      return
+    }
+
+    let currentIndex = 0
+    let timeoutId
+
+    const typeNext = () => {
+      if (currentIndex >= msg.content.length) {
+        msg.isNew = false // prevent re-typing if component re-renders
+        return
+      }
+
+      // Reveal 2 to 6 characters at a time for a fast, blocky streaming feel
+      const chunkSize = Math.floor(Math.random() * 5) + 2
+      currentIndex = Math.min(currentIndex + chunkSize, msg.content.length)
+
+      setDisplayedText(msg.content.slice(0, currentIndex))
+      if (onTyping) onTyping()
+
+      // Occasional "network/thinking" micro-pauses
+      const isPause = Math.random() > 0.95
+      const delay = isPause ? Math.random() * 200 + 100 : 5 + Math.random() * 15
+
+      timeoutId = setTimeout(typeNext, delay)
+    }
+
+    timeoutId = setTimeout(typeNext, 100)
+    return () => clearTimeout(timeoutId)
+  }, [msg.content, msg.isNew, msg, onTyping])
 
   const copyText = () => {
     navigator.clipboard.writeText(msg.content)
@@ -51,7 +85,7 @@ const MessageBubble = ({ msg }) => {
             : 'glass border border-dark-200 dark:border-white/10 text-dark-800 dark:text-dark-200 rounded-tl-sm'
         }`}>
           {/* Render markdown-like bold and lists */}
-          {msg.content.split('\n').map((line, i) => {
+          {displayedText.split('\n').map((line, i) => {
             const isBullet = line.trim().startsWith('•') || line.trim().startsWith('-');
             const formattedLine = line.split(/(\*\*[^*]+\*\*)/).map((part, j) =>
               part.startsWith('**') && part.endsWith('**')
@@ -61,13 +95,17 @@ const MessageBubble = ({ msg }) => {
             return (
               <p key={i} className={`${line === '' ? 'h-2' : 'mb-1'} ${isBullet ? 'pl-4 relative before:content-["•"] before:absolute before:left-0 before:text-brand-500' : ''}`}>
                 {isBullet ? formattedLine.map((el, i) => (typeof el === 'string' ? el.replace(/^[\s•-]+/, '') : el)) : formattedLine}
+                {/* Typing cursor */}
+                {msg.isNew && i === displayedText.split('\n').length - 1 && (
+                  <span className="inline-block w-1.5 h-4 ml-1 align-middle bg-brand-500 animate-pulse" />
+                )}
               </p>
             );
           })}
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-dark-500 dark:text-dark-600">{msg.time}</span>
-          {msg.role === 'assistant' && (
+          {msg.role === 'assistant' && !msg.isNew && (
             <button onClick={copyText} className="text-dark-400 hover:text-dark-700 dark:text-dark-600 dark:hover:text-dark-300 transition-colors">
               {copied ? <Check size={11} className="text-green-500 dark:text-green-400" /> : <Copy size={11} />}
             </button>
@@ -84,11 +122,16 @@ const AIChat = () => {
       role: 'assistant',
       content: INITIAL_MESSAGE,
       time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+      isNew: false
     },
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef(null)
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: 'auto' })
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -119,6 +162,7 @@ const AIChat = () => {
         role: 'assistant',
         content: res.answer || "I received a response, but it was empty.",
         time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+        isNew: true
       }])
     } catch (err) {
       const raw = err?.error?.message || err?.message || ''
@@ -184,7 +228,7 @@ const AIChat = () => {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto card space-y-5 mb-4 scroll-smooth">
-        {messages.map((msg, i) => <MessageBubble key={i} msg={msg} />)}
+        {messages.map((msg, i) => <MessageBubble key={i} msg={msg} onTyping={scrollToBottom} />)}
         {loading && (
           <div className="flex gap-3 animate-fade-in">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shrink-0 mt-1">
