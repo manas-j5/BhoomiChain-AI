@@ -1,13 +1,10 @@
 import axios from 'axios'
 
-// In production (Vercel), VITE_API_URL points to the Render backend.
-// In local dev, the Vite proxy forwards /api → localhost:5000.
-const BASE_URL = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : '/api'
-
+// All /api/* requests are proxied to the backend:
+// - Local dev: Vite proxy (vite.config.js) → http://localhost:5000
+// - Production (Vercel): vercel.json rewrites → https://bhoomi-track.onrender.com
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: '/api',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
