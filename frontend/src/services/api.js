@@ -40,4 +40,9 @@ export const healthApi = {
   check: () => api.get('/health'),
 }
 
+// ── AI API ──────────────────────────────────────────────────────────────────
+export const aiApi = {
+  chat: (data) => api.post('/ai/chat', data, { timeout: 60000 }),
+}
+
 export default api

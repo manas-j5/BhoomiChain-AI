@@ -8,29 +8,16 @@ const SAMPLE_QUESTIONS = [
   'What is the Forest Rights Act 2006?',
 ]
 
-// Simulated AI responses (connects to Python AI Engine later)
-const AI_RESPONSES = {
-  default: `I'm BhoomiChain AI, your land governance intelligence assistant. I can help you with:
+import { aiApi } from '../services/api'
+
+const INITIAL_MESSAGE = `I'm BhoomiChain AI, your land governance intelligence assistant. I can help you with:
 
 • **Case summaries** — AI-powered analysis of dispute evidence
 • **Legal context** — relevant laws, acts, and precedents
 • **Document analysis** — PDF extraction and citation
 • **GIS insights** — spatial analysis of land parcels
 
-*Note: Full AI capabilities will be available when the AI Engine (Python RAG pipeline on \`feature/ai\` branch) is connected.*`,
-  ranchi: `**Case: Agricultural Land Encroachment — Ranchi District (CASE-2024-001)**
-
-**Summary:** Plaintiff Ramesh Kumar Mahto claims ancestral ownership of 2.5 acres in Nagri village, Survey No. 45/A. Unauthorized construction by defendant Suresh Singh is alleged.
-
-**Key Evidence:**
-- Sale Deed (1952) — verified on blockchain ✓
-- Revenue record — verified ✓
-- Survey map — pending verification
-
-**Legal Basis:** Plaintiff has strong documentary evidence with verified historical records dating to 1952.
-
-**Status:** Active · Next hearing Aug 20, 2024 at Ranchi District Court.`,
-}
+How can I help you today?`
 
 const MessageBubble = ({ msg }) => {
   const [copied, setCopied] = useState(false)
@@ -94,7 +81,7 @@ const AIChat = () => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: AI_RESPONSES.default,
+      content: INITIAL_MESSAGE,
       time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
     },
   ])
@@ -117,17 +104,30 @@ const AIChat = () => {
     setInput('')
     setLoading(true)
 
-    // Simulate AI delay (replace with real API call to AI Engine)
-    await new Promise(r => setTimeout(r, 1200))
-    const responseText = text.toLowerCase().includes('ranchi')
-      ? AI_RESPONSES.ranchi
-      : `I've received your query: **"${text}"**\n\nFull AI-powered responses will be available once the Python RAG pipeline (on the \`feature/ai\` branch) is deployed and connected. The pipeline processes:\n\n• PDF extraction → chunking → embeddings\n• ChromaDB vector search\n• LLM response with citations`
-    setMessages(prev => [...prev, {
-      role: 'assistant',
-      content: responseText,
-      time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-    }])
-    setLoading(false)
+    try {
+      // Build a clean history — skip the initial greeting and any error messages,
+      // and only include real user/assistant turns from before this message.
+      const cleanHistory = messages
+        .filter(m => m.role === 'user' || m.role === 'assistant')
+        .filter(m => !m.content.startsWith("Sorry, I encountered an error"))
+        .filter(m => !m.content.startsWith("I'm BhoomiChain AI, your land"))
+        .map(m => ({ role: m.role, content: m.content }))
+
+      const res = await aiApi.chat({ message: text, history: cleanHistory })
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: res.answer || "I received a response, but it was empty.",
+        time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+      }])
+    } catch (err) {
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Sorry, I encountered an error connecting to the AI Engine: ${err?.error?.message || err?.message || 'Unknown error'}`,
+        time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+      }])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleKeyDown = (e) => {
@@ -152,7 +152,7 @@ const AIChat = () => {
           id="clear-chat-btn"
           onClick={() => setMessages([{
             role: 'assistant',
-            content: AI_RESPONSES.default,
+            content: INITIAL_MESSAGE,
             time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
           }])}
           className="btn-secondary flex items-center gap-2 text-sm"
