@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, Sparkles, RefreshCw, Copy, Check } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 const SAMPLE_QUESTIONS = [
   'Summarize the Ranchi encroachment case',
@@ -120,11 +121,17 @@ const AIChat = () => {
         time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
       }])
     } catch (err) {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: `Sorry, I encountered an error connecting to the AI Engine: ${err?.error?.message || err?.message || 'Unknown error'}`,
-        time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-      }])
+      const raw = err?.error?.message || err?.message || ''
+
+      // Timeout: Gemini can be slow — silently retry signal, no scary message
+      if (raw.toLowerCase().includes('timeout') || raw.toLowerCase().includes('network')) {
+        toast.warn('The AI engine is taking longer than usual. Please try again in a moment.', 6000)
+      } else if (raw.toLowerCase().includes('cors') || raw.toLowerCase().includes('not allowed')) {
+        toast.error('Connection blocked by CORS policy. Please contact the team to update the backend origin list.', 8000)
+      } else {
+        // Generic error — show as toast, don't pollute the chat
+        toast.error(raw || 'Failed to reach the AI engine. Please try again.', 6000)
+      }
     } finally {
       setLoading(false)
     }
