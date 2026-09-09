@@ -151,21 +151,40 @@ ${contextBlock}`
 
   // 4. Call Gemini API
   const model = genAI.getGenerativeModel({
-    model: 'gemini-3.6-flash',
+    model: 'gemini-3.7-flash',
     systemInstruction: systemPrompt,
   })
 
-  // Build chat history
+  // Build chat history — only valid user/assistant pairs, capped at last 10 turns
   const history = conversationHistory
-    .filter(m => m.role === 'user' || m.role === 'assistant')
+    .filter(m => (m.role === 'user' || m.role === 'assistant') && m.content && m.content.trim())
+    .slice(-10)
     .map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }],
     }))
 
-  const chat = model.startChat({ history })
-  const result = await chat.sendMessage(userMessage)
-  const answer = result.response.text()
+  // Gemini requires history to start with a user message
+  while (history.length > 0 && history[0].role === 'model') {
+    history.shift()
+  }
+  // Gemini requires alternating user/model — remove consecutive duplicates
+  const cleanHistory = []
+  for (const turn of history) {
+    if (cleanHistory.length === 0 || cleanHistory[cleanHistory.length - 1].role !== turn.role) {
+      cleanHistory.push(turn)
+    }
+  }
+
+  let answer = ''
+  try {
+    const chatSession = model.startChat({ history: cleanHistory })
+    const result = await chatSession.sendMessage(userMessage)
+    answer = result.response.text()
+  } catch (err) {
+    console.error('[Gemini API Error]', err.message || err)
+    answer = "I apologize, but the AI engine is currently experiencing high demand or an outage. However, based on my local database search, I have retrieved the following evidence below."
+  }
 
   // 5. Build sources array for frontend citation display
   const sources = [

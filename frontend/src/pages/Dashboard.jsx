@@ -221,7 +221,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {cases.map(c => <CaseCard key={c.id} caseData={c} />)}
+            {cases.map((c, i) => <CaseCard key={`${c.id}-${i}`} caseData={c} />)}
           </div>
         )}
       </div>
